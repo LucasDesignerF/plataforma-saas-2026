@@ -45,35 +45,44 @@ var discordEndpoint = oauth2.Endpoint{
 	TokenURL: "https://discord.com/api/oauth2/token",
 }
 
-// URL do proxy (ngrok)
+// URL do proxy (ngrok) - ATUALIZE COM A URL DO SEU NGROK
 const discordProxyBase = "https://26b4-45-189-231-187.ngrok-free.app"
 
-// Transporte personalizado que redireciona as chamadas para o Worker
+// Transporte personalizado que redireciona as chamadas para o proxy
 type discordProxyRoundTripper struct{}
 
 func (t *discordProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Redireciona apenas requisições para os endpoints da API do Discord (token e user info)
+	// Só redireciona se for para a API do Discord
 	if req.URL.Host == "discord.com" {
-		if req.URL.Path == "/oauth2/token" || req.URL.Path == "/api/users/@me" {
-			newURL := discordProxyBase + req.URL.Path
-			newReqURL, err := url.Parse(newURL)
-			if err != nil {
-				return nil, err
-			}
-			req.URL = newReqURL
-			req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Go backend via Cloudflare)")
+		var newPath string
+		if req.URL.Path == "/oauth2/token" {
+			newPath = "/token"
+		} else if req.URL.Path == "/api/users/@me" {
+			newPath = "/users/@me"
+		} else {
+			// outros endpoints vão direto
+			return http.DefaultTransport.RoundTrip(req)
 		}
+		newURL := discordProxyBase + newPath
+		newReqURL, err := url.Parse(newURL)
+		if err != nil {
+			return nil, err
+		}
+		req.URL = newReqURL
+		req.Host = newReqURL.Host
+		req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Go backend via ngrok)")
 	}
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-// Configura o cliente HTTP padrão para usar o proxy (todas as chamadas HTTP da aplicação)
+// Configura o cliente HTTP padrão para usar o transporte customizado
 func initHTTPClient() {
 	http.DefaultClient.Timeout = 10 * time.Second
 	http.DefaultClient.Transport = &discordProxyRoundTripper{}
 }
 
-// Structs (devem vir antes do init que as utiliza)
+// ==================== STRUCTS ====================
+
 type User struct {
 	ID                string    `json:"id"`
 	DiscordID         string    `json:"discord_id"`
@@ -127,8 +136,10 @@ type Ticket struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// ==================== INIT ====================
+
 func init() {
-	// Configura o cliente HTTP global com o proxy
+	// Configura o cliente HTTP padrão com o proxy
 	initHTTPClient()
 
 	if err := godotenv.Load(); err != nil {
@@ -160,7 +171,7 @@ func init() {
 		Scopes:       []string{"identify", "email"},
 		Endpoint:     discordEndpoint,
 	}
-	// Não atribuímos oauthConfig.Client – o padrão http.DefaultClient já está configurado com o proxy
+	// NÃO atribuímos oauthConfig.Client – o http.DefaultClient já está configurado e será usado automaticamente
 
 	pixName = os.Getenv("PIX_NAME")
 	pixCity = os.Getenv("PIX_CITY")
@@ -311,6 +322,8 @@ func computeCRC16(payload string) uint16 {
 	return crc & 0xFFFF
 }
 
+// ==================== MAIN ====================
+
 func main() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -322,14 +335,11 @@ func main() {
 	r.HandleFunc("/auth/callback", authCallbackHandler)
 	r.HandleFunc("/logout", logoutHandler)
 
-	// Endpoint de ping para manter o serviço ativo (keep-alive)
 	r.HandleFunc("/ping", pingHandler)
 
-	// API pública
 	r.HandleFunc("/api/products", apiProductsHandler)
 	r.HandleFunc("/api/user/me", apiUserMeHandler)
 
-	// Rotas privadas do usuário comum
 	r.HandleFunc("/dashboard", requireAuth(dashboardHandler))
 	r.HandleFunc("/api/user/orders", requireAuth(userOrdersHandler))
 	r.HandleFunc("/api/user/products", requireAuth(userProductsHandler))
@@ -339,7 +349,6 @@ func main() {
 	r.HandleFunc("/api/order", requireAuth(createOrderHandler))
 	r.HandleFunc("/api/cart/checkout", requireAuth(cartCheckoutHandler)).Methods("POST")
 
-	// Rotas administrativas
 	r.HandleFunc("/admin", requireAdmin(adminPanelHandler))
 	r.HandleFunc("/admin/products", requireAdmin(adminProductsHandler))
 	r.HandleFunc("/admin/orders", requireAdmin(adminOrdersHandler))
@@ -367,7 +376,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
-// Handler de ping (keep-alive)
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
@@ -999,7 +1007,6 @@ func adminReplyTicketHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-// Listar usuários (resumido)
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	readJSON(usersFile, &users)
@@ -1024,7 +1031,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// Alterar status de admin de um usuário
 func adminToggleAdminHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
@@ -1043,13 +1049,11 @@ func adminToggleAdminHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Usuário não encontrado", http.StatusNotFound)
 		return
 	}
-	// Não permitir alterar o próprio admin (segurança)
 	currentUser := getCurrentUser(r)
 	if currentUser != nil && currentUser.ID == userID {
 		http.Error(w, "Não é possível alterar seu próprio status de admin", http.StatusBadRequest)
 		return
 	}
-	// Inverter o status
 	targetUser.IsAdmin = !targetUser.IsAdmin
 	users[targetIndex] = *targetUser
 	writeJSON(usersFile, users)
@@ -1060,7 +1064,6 @@ func adminToggleAdminHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Excluir usuário
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
@@ -1136,10 +1139,12 @@ func adminStatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func roundFloat(val float64, precision int) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
 }
+
 func generateID() string {
 	b := make([]byte, 16)
 	rand.Read(b)
