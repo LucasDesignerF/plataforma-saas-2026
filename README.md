@@ -2,9 +2,17 @@
 
 **Nexus Platforms** é uma plataforma completa para venda de produtos digitais com autenticação via Discord OAuth, pagamentos via PIX (QR Code e copia e cola), entrega automática, sistema de tickets de suporte e um poderoso painel administrativo. Desenvolvida em **Go (Golang)** com armazenamento local em JSON, oferece uma interface moderna, responsiva e com fundo animado (grid + orbs) e efeitos glassmorphism.
 
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/LucasDesignerF/plataforma-saas-2026)
-![GitHub repo size](https://img.shields.io/github/repo-size/LucasDesignerF/plataforma-saas-2026)
-![Discord](https://img.shields.io/discord/1351699619310141532?label=Discord&logo=discord&color=5865F2)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub repo size](https://img.shields.io/github/repo-size/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub license](https://img.shields.io/github/license/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub language count](https://img.shields.io/github/languages/count/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub top language](https://img.shields.io/github/languages/top/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![Discord](https://img.shields.io/discord/1351699619310141532?label=Discord&logo=discord&color=5865F2&style=flat-square)
+![GitHub stars](https://img.shields.io/github/stars/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub forks](https://img.shields.io/github/forks/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues/LucasDesignerF/plataforma-saas-2026?style=flat-square)
+![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 
 ---
 
