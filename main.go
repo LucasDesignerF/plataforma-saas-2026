@@ -10,7 +10,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -43,42 +42,6 @@ var (
 var discordEndpoint = oauth2.Endpoint{
 	AuthURL:  "https://discord.com/api/oauth2/authorize",
 	TokenURL: "https://discord.com/api/oauth2/token",
-}
-
-// URL do proxy (ngrok) - ATUALIZE COM A URL DO SEU NGROK
-const discordProxyBase = "https://26b4-45-189-231-187.ngrok-free.app"
-
-// Transporte personalizado que redireciona as chamadas para o proxy
-type discordProxyRoundTripper struct{}
-
-func (t *discordProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Só redireciona se for para a API do Discord
-	if req.URL.Host == "discord.com" {
-		var newPath string
-		if req.URL.Path == "/oauth2/token" {
-			newPath = "/token"
-		} else if req.URL.Path == "/api/users/@me" {
-			newPath = "/users/@me"
-		} else {
-			// outros endpoints vão direto
-			return http.DefaultTransport.RoundTrip(req)
-		}
-		newURL := discordProxyBase + newPath
-		newReqURL, err := url.Parse(newURL)
-		if err != nil {
-			return nil, err
-		}
-		req.URL = newReqURL
-		req.Host = newReqURL.Host
-		req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Go backend via ngrok)")
-	}
-	return http.DefaultTransport.RoundTrip(req)
-}
-
-// Configura o cliente HTTP padrão para usar o transporte customizado
-func initHTTPClient() {
-	http.DefaultClient.Timeout = 10 * time.Second
-	http.DefaultClient.Transport = &discordProxyRoundTripper{}
 }
 
 // ==================== STRUCTS ====================
@@ -136,10 +99,26 @@ type Ticket struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// ==================== CONFIGURAÇÃO DO CLIENTE HTTP (OTIMIZADO) ====================
+
+// initHTTPClient configura o transporte padrão para reutilizar conexões e evitar rate limits desnecessários.
+func initHTTPClient() {
+	transport := &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
+		DisableCompression:  false,
+	}
+	http.DefaultClient = &http.Client{
+		Timeout:   15 * time.Second,
+		Transport: transport,
+	}
+}
+
 // ==================== INIT ====================
 
 func init() {
-	// Configura o cliente HTTP padrão com o proxy
 	initHTTPClient()
 
 	if err := godotenv.Load(); err != nil {
@@ -171,7 +150,6 @@ func init() {
 		Scopes:       []string{"identify", "email"},
 		Endpoint:     discordEndpoint,
 	}
-	// NÃO atribuímos oauthConfig.Client – o http.DefaultClient já está configurado e será usado automaticamente
 
 	pixName = os.Getenv("PIX_NAME")
 	pixCity = os.Getenv("PIX_CITY")
@@ -322,7 +300,7 @@ func computeCRC16(payload string) uint16 {
 	return crc & 0xFFFF
 }
 
-// ==================== MAIN ====================
+// ==================== MAIN (COM TIMEOUTS E REUSE DE CONEXÃO) ====================
 
 func main() {
 	r := mux.NewRouter()
@@ -372,8 +350,17 @@ func main() {
 			port = "8080"
 		}
 	}
+
+	srv := &http.Server{
+		Addr:         ":" + port,
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
 	log.Printf("Servidor rodando em http://localhost:%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Fatal(srv.ListenAndServe())
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
