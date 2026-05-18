@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -44,26 +45,35 @@ var discordEndpoint = oauth2.Endpoint{
 	TokenURL: "https://discord.com/api/oauth2/token",
 }
 
-// Cliente HTTP com User-Agent personalizado para evitar bloqueios
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
+// URL do proxy (ngrok)
+const discordProxyBase = "https://26b4-45-189-231-187.ngrok-free.app"
+
+// Transporte personalizado que redireciona as chamadas para o Worker
+type discordProxyRoundTripper struct{}
+
+func (t *discordProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Redireciona apenas requisições para os endpoints da API do Discord (token e user info)
+	if req.URL.Host == "discord.com" {
+		if req.URL.Path == "/oauth2/token" || req.URL.Path == "/api/users/@me" {
+			newURL := discordProxyBase + req.URL.Path
+			newReqURL, err := url.Parse(newURL)
+			if err != nil {
+				return nil, err
+			}
+			req.URL = newReqURL
+			req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Go backend via Cloudflare)")
+		}
+	}
+	return http.DefaultTransport.RoundTrip(req)
 }
 
-func init() {
-	// Configurar User-Agent global para o cliente HTTP usado pelo OAuth2
+// Configura o cliente HTTP padrão para usar o proxy (todas as chamadas HTTP da aplicação)
+func initHTTPClient() {
 	http.DefaultClient.Timeout = 10 * time.Second
-	http.DefaultClient.Transport = &customTransport{roundTripper: http.DefaultTransport}
+	http.DefaultClient.Transport = &discordProxyRoundTripper{}
 }
 
-type customTransport struct {
-	roundTripper http.RoundTripper
-}
-
-func (t *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Render; +https://nexusplatforms.com)")
-	return t.roundTripper.RoundTrip(req)
-}
-
+// Structs (devem vir antes do init que as utiliza)
 type User struct {
 	ID                string    `json:"id"`
 	DiscordID         string    `json:"discord_id"`
@@ -118,6 +128,9 @@ type Ticket struct {
 }
 
 func init() {
+	// Configura o cliente HTTP global com o proxy
+	initHTTPClient()
+
 	if err := godotenv.Load(); err != nil {
 		log.Println(".env não encontrado, usando variáveis de ambiente")
 	}
@@ -147,8 +160,7 @@ func init() {
 		Scopes:       []string{"identify", "email"},
 		Endpoint:     discordEndpoint,
 	}
-	// ❌ REMOVA ESTA LINHA:
-	// oauthConfig.Client = func(ctx context.Context) *http.Client { return httpClient }
+	// Não atribuímos oauthConfig.Client – o padrão http.DefaultClient já está configurado com o proxy
 
 	pixName = os.Getenv("PIX_NAME")
 	pixCity = os.Getenv("PIX_CITY")
