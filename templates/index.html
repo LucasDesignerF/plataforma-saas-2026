@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Nexus Platforms - Soluções em desenvolvimento web, bots, sites, APIs e automações. Criamos tecnologia de alto desempenho para seu negócio.">
+    <meta name="keywords" content="desenvolvimento web, bots, APIs, automações, sites profissionais, Nexus Platforms">
+    <meta name="author" content="Nexus Platforms">
+    <meta property="og:title" content="Nexus Platforms | Tecnologia que conecta ideias e resultados">
+    <meta property="og:description" content="Soluções personalizadas em desenvolvimento web, automações e integrações.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nexusplatforms.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Nexus Platforms | Tecnologia e Inovação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #e2e8f0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fundo animado (grid + orbs) */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(30, 30, 60, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 30, 60, 0.08) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.25;
+            z-index: -1;
+            animation: float 18s infinite ease-in-out;
+        }
+        .orb-purple {
+            width: 500px;
+            height: 500px;
+            background: #7c3aed;
+            top: -200px;
+            left: -200px;
+        }
+        .orb-blue {
+            width: 600px;
+            height: 600px;
+            background: #2563eb;
+            bottom: -250px;
+            right: -250px;
+            animation-delay: -6s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-60px) rotate(5deg); }
+        }
+
+        /* ===== NAVBAR FIXA COM EFEITO HIDE/SHOW ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 1.5rem;
+            transition: transform 0.3s ease-in-out;
+            transform: translateY(0);
+        }
+        .navbar.hide {
+            transform: translateY(-100%);
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            border-radius: 100px;
+            padding: 0.9rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            letter-spacing: -0.3px;
+            margin-right: 2rem;
+        }
+        .nav-brand i {
+            color: #a78bfa;
+            background: none;
+            -webkit-background-clip: unset;
+            font-size: 2rem;
+        }
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 1rem;
+        }
+        .nav-links a:hover {
+            color: #c084fc;
+        }
+        .mobile-toggle {
+            display: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #e2e8f0;
+        }
+
+        /* Container principal com margin-top para compensar a navbar fixa */
+        .container {
+            flex: 1;
+            max-width: 1280px;
+            margin: 6rem auto 0; /* espaçamento superior para não ficar atrás da navbar */
+            padding: 2rem 1.5rem;
+            width: 100%;
+        }
+
+        /* ===== HERO 1 – espaçoso ===== */
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem 6rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2rem;
+            margin-bottom: 5rem;
+            backdrop-filter: blur(2px);
+        }
+        .hero h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            max-width: 800px;
+            margin: 0 auto 1.8rem;
+            line-height: 1.2;
+        }
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 650px;
+            margin: 0 auto 2.5rem;
+            color: #cbd5e1;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #c084fc;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-outline:hover {
+            background: rgba(167, 139, 250, 0.1);
+            transform: translateY(-2px);
+            border-color: #c084fc;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            border: none;
+            padding: 0.9rem 2.2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        /* Seção título */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 5rem 0 3rem;
+            background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Cards 2 – Borda fina */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        .service-card {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            border: 1px solid #2d2d4e;
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: #a78bfa;
+            background: rgba(20, 20, 40, 0.7);
+        }
+        .service-icon {
+            font-size: 2.5rem;
+            color: #a78bfa;
+            margin-bottom: 1.2rem;
+        }
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .service-card p {
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .card-btn {
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #c084fc;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .card-btn:hover {
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        /* Estatísticas */
+        .stats-grid {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 3rem 0 5rem;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+            min-width: 140px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.2rem;
+            border-radius: 1rem;
+            border: 1px solid #2d2d4e;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #a78bfa;
+        }
+        .stat-label {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        /* CTA */
+        .cta-section {
+            background: rgba(124, 58, 237, 0.08);
+            border-radius: 1.5rem;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            margin: 3rem 0;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            backdrop-filter: blur(4px);
+        }
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        /* Footer 2 */
+        .footer {
+            background: rgba(10, 10, 20, 0.9);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #2d2d4e;
+            padding: 2.5rem 1.5rem 1.5rem;
+            margin-top: 4rem;
+        }
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        .footer-col h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+        .footer-col p, .footer-col a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        .footer-col a:hover {
+            color: #c084fc;
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .social-links a {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+        .social-links a:hover {
+            color: #c084fc;
+            transform: translateY(-2px);
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Cookie banner */
+        .cookie-banner {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            z-index: 1000;
+            border-radius: 1rem;
+            border: 1px solid #7c3aed;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .cookie-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Animações */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up {
+            animation: fadeUp 0.7s ease-out forwards;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+            .nav-links.active {
+                display: flex;
+            }
+            .mobile-toggle {
+                display: block;
+            }
+            .nav-container {
+                flex-wrap: wrap;
+                border-radius: 50px;
+                padding: 0.8rem 1.5rem;
+            }
+            .nav-brand {
+                font-size: 1.3rem;
+                margin-right: 0;
+            }
+            .hero {
+                padding: 3rem 1rem 4rem;
+                margin-bottom: 3rem;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .section-title {
+                margin: 3rem 0 1.5rem;
+                font-size: 1.6rem;
+            }
+            .container {
+                margin-top: 5rem;
+            }
+            .footer-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .cookie-banner {
+                flex-direction: column;
+                text-align: center;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="orb orb-purple"></div>
+    <div class="orb orb-blue"></div>
+
+    <!-- Navbar fixa com efeito hide/show -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class='bx bx-rocket'></i> Nexus Platforms
+            </div>
+            <div class="mobile-toggle" id="mobileToggle">
+                <i class='bx bx-menu'></i>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="/"><i class='bx bx-home'></i> Home</a>
+                <a href="/products"><i class='bx bx-package'></i> Produtos</a>
+                <a href="/documentation"><i class='bx bx-book'></i> Documentação</a>
+                <a href="/dashboard" id="dashboardLink"><i class='bx bx-user'></i> Dashboard</a>
+                <a href="/admin" id="adminLink" style="display: none;"><i class='bx bx-shield-alt'></i> Admin</a>
+                <a href="/login" id="loginLink"><i class='bx bx-log-in'></i> Login</a>
+                <a href="/logout" id="logoutLink" style="display: none;"><i class='bx bx-log-out'></i> Sair</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container fade-up">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>Tecnologia que conecta ideias e resultados</h1>
+            <p>Desenvolvimento web, bots, APIs e automações de alto desempenho. Transformamos seus projetos em soluções reais.</p>
+            <div class="btn-group">
+                <a href="/products" class="btn-primary">Nossos Produtos <i class='bx bx-right-arrow-alt'></i></a>
+                <a href="/documentation" class="btn-outline">Conheça a Nexus</a>
+            </div>
+        </div>
+
+        <!-- Serviços -->
+        <h2 class="section-title">O que fazemos</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon"><i class='bx bx-code-alt'></i></div>
+                <h3>Desenvolvimento Web</h3>
+                <p>Sites institucionais, e-commerces, dashboards e sistemas sob medida.</p>
+                <button class="card-btn" onclick="window.location.href='/products'">Saiba mais →</button>
+            </div>
+            <div class="service-card">
+                <div class="service-icon"><i class='bx bx-bot'></i></div>
+                <h3>Bots e Automações</h3>
+                <p>Automatize tarefas, crie bots para Discord, Telegram, WhatsApp.</p>
+                <button class="card-btn" onclick="window.location.href='/products'">Saiba mais →</button>
+            </div>
+            <div class="service-card">
+                <div class="service-icon"><i class='bx bx-data'></i></div>
+                <h3>APIs e Integrações</h3>
+                <p>APIs robustas e integrações com sistemas externos.</p>
+                <button class="card-btn" onclick="window.location.href='/products'">Saiba mais →</button>
+            </div>
+            <div class="service-card">
+                <div class="service-icon"><i class='bx bx-cog'></i></div>
+                <h3>Automação de Processos</h3>
+                <p>RPA, web scraping, fluxos automáticos para produtividade.</p>
+                <button class="card-btn" onclick="window.location.href='/products'">Saiba mais →</button>
+            </div>
+        </div>
+
+        <!-- Diferenciais -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Projetos entregues</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Satisfação dos clientes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Suporte técnico</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5★</div>
+                <div class="stat-label">Avaliações positivas</div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <h2>Pronto para dar o próximo passo?</h2>
+            <p>Adquira nossos produtos ou solicite uma solução personalizada para seu negócio.</p>
+            <a href="/products" class="btn-primary">Explorar produtos <i class='bx bx-right-arrow-alt'></i></a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h4><i class='bx bx-rocket'></i> Nexus Platforms</h4>
+                <p>Tecnologia que transforma ideias em resultados. Inovação, performance e segurança.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Discord"><i class='bx bxl-discord'></i></a>
+                    <a href="#" aria-label="GitHub"><i class='bx bxl-github'></i></a>
+                    <a href="#" aria-label="Twitter"><i class='bx bxl-twitter'></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class='bx bxl-linkedin'></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Links rápidos</h4>
+                <a href="/products">Produtos</a><br>
+                <a href="/documentation">Documentação</a><br>
+                <a href="/dashboard">Dashboard</a><br>
+                <a href="/admin">Admin</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/privacy">Política de Privacidade</a><br>
+                <a href="/terms">Termos de Uso</a><br>
+                <a href="/cookies">Política de Cookies</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2025 Nexus Platforms. Todos os direitos reservados. | Inovação e tecnologia
+        </div>
+    </footer>
+
+    <!-- Cookie banner -->
+    <div id="cookieBanner" class="cookie-banner" style="display: none;">
+        <div class="cookie-text">
+            <i class='bx bx-cookie'></i> Utilizamos cookies para melhorar sua experiência. Ao continuar, você concorda.
+        </div>
+        <div class="cookie-buttons">
+            <button id="acceptCookies" class="btn-primary" style="padding: 0.4rem 1.2rem;">Aceitar</button>
+            <button id="rejectCookies" class="btn-outline" style="padding: 0.4rem 1.2rem;">Rejeitar</button>
+        </div>
+    </div>
+
+    <script>
+        // Menu mobile
+        const toggleBtn = document.getElementById('mobileToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (toggleBtn && navLinks) {
+            toggleBtn.addEventListener('click', () => navLinks.classList.toggle('active'));
+        }
+
+        // Efeito esconder/mostrar navbar ao rolar
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Rolar para baixo e passou 100px -> esconde
+                navbar.classList.add('hide');
+            } else {
+                // Rolar para cima -> mostra
+                navbar.classList.remove('hide');
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // Cookie management
+        function setCookie(name, value, days) {
+            let expires = '';
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = '; expires=' + date.toUTCString();
+            }
+            document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Lax';
+        }
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        const consent = getCookie('cookie_consent');
+        const banner = document.getElementById('cookieBanner');
+        if (!consent && banner) banner.style.display = 'flex';
+        document.getElementById('acceptCookies')?.addEventListener('click', () => {
+            setCookie('cookie_consent', 'accepted', 365);
+            if (banner) banner.style.display = 'none';
+        });
+        document.getElementById('rejectCookies')?.addEventListener('click', () => {
+            setCookie('cookie_consent', 'rejected', 30);
+            if (banner) banner.style.display = 'none';
+        });
+
+        // Autenticação
+        async function updateUserInterface() {
+            try {
+                const res = await fetch('/api/user/me');
+                if (!res.ok) throw new Error();
+                const user = await res.json();
+                const loginLink = document.getElementById('loginLink');
+                const logoutLink = document.getElementById('logoutLink');
+                const dashboardLink = document.getElementById('dashboardLink');
+                const adminLink = document.getElementById('adminLink');
+                if (user) {
+                    if (loginLink) loginLink.style.display = 'none';
+                    if (logoutLink) logoutLink.style.display = 'inline-flex';
+                    if (dashboardLink) dashboardLink.style.display = 'inline-flex';
+                    if (user.is_admin && adminLink) adminLink.style.display = 'inline-flex';
+                    else if (adminLink) adminLink.style.display = 'none';
+                } else {
+                    if (loginLink) loginLink.style.display = 'inline-flex';
+                    if (logoutLink) logoutLink.style.display = 'none';
+                    if (dashboardLink) dashboardLink.style.display = 'none';
+                    if (adminLink) adminLink.style.display = 'none';
+                }
+            } catch (error) {}
+        }
+        updateUserInterface();
+    </script>
+</body>
+</html>

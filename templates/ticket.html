@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Ticket - Nexus Platforms</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="orb orb-purple"></div>
+    <div class="orb orb-blue"></div>
+    <nav class="glass-card navbar"><div class="nav-brand">Nexus Platforms</div><div><a href="/">Home</a> | <a href="/dashboard">Dashboard</a></div></nav>
+    <div class="container">
+        <div class="glass-card" style="max-width: 500px; margin: 2rem auto;">
+            <h2>Abrir Ticket</h2>
+            <form id="ticketForm">
+                <input type="text" name="subject" placeholder="Assunto" required>
+                <textarea name="message" placeholder="Detalhes" rows="5" required></textarea>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const resp = await fetch('/api/ticket', { method: 'POST', body: fd });
+            if (resp.ok) alert('Ticket enviado!');
+            else alert('Erro. Faça login primeiro.');
+        });
+    </script>
+</body>
+</html>

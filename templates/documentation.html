@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentação completa da Nexus Platforms - Como comprar, receber produtos e usar tickets.">
+    <title>Documentação - Nexus Platforms</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="/static/script.js" defer></script>
+    <style>
+        .doc-section { margin-bottom: 2rem; }
+        .doc-section h2 { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        @media (max-width: 768px) { .container { padding: 1rem; } }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="orb orb-purple"></div>
+    <div class="orb orb-blue"></div>
+
+    <nav class="glass-card navbar">
+        <div class="nav-brand"><i class='bx bx-rocket'></i> Nexus Platforms</div>
+        <div class="nav-menu" id="navMenu">
+            <a href="/"><i class='bx bx-home'></i> Home</a>
+            <a href="/products"><i class='bx bx-package'></i> Produtos</a>
+            <a href="/documentation"><i class='bx bx-book'></i> Documentação</a>
+            <a href="/dashboard" id="dashboardLink"><i class='bx bx-user'></i> Dashboard</a>
+            <a href="/login" id="loginLink"><i class='bx bx-log-in'></i> Login</a>
+            <a href="/logout" id="logoutLink" style="display: none;"><i class='bx bx-log-out'></i> Sair</a>
+        </div>
+        <div class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></div>
+    </nav>
+
+    <div class="container">
+        <h1><i class='bx bx-book-open'></i> Documentação</h1>
+
+        <div class="glass-card doc-section">
+            <h2><i class='bx bx-cart'></i> Como comprar</h2>
+            <ol>
+                <li>Faça login com sua conta Discord.</li>
+                <li>Acesse o catálogo de produtos e escolha o item desejado.</li>
+                <li>Clique em "Comprar com PIX".</li>
+                <li>Um modal exibirá o QR Code e o código copia e cola.</li>
+                <li>Realize o pagamento via app do seu banco.</li>
+                <li>Após a confirmação manual pelo admin, o produto será entregue automaticamente no seu dashboard.</li>
+            </ol>
+        </div>
+
+        <div class="glass-card doc-section">
+            <h2><i class='bx bx-cloud-download'></i> Entrega de produtos</h2>
+            <p>Os produtos digitais podem ser entregues de três formas:</p>
+            <ul>
+                <li><strong>Texto:</strong> Uma mensagem ou instrução personalizada.</li>
+                <li><strong>Key:</strong> Código único de ativação.</li>
+                <li><strong>Arquivo:</strong> Link para download do arquivo.</li>
+            </ul>
+            <p>Tudo fica disponível na área <strong>Dashboard → Produtos Comprados</strong>.</p>
+        </div>
+
+        <div class="glass-card doc-section">
+            <h2><i class='bx bx-support'></i> Sistema de Tickets</h2>
+            <p>Precisa de ajuda? Abra um ticket no seu dashboard. O administrador responderá diretamente por lá.</p>
+            <p>Após a resposta, o ticket é fechado automaticamente.</p>
+        </div>
+    </div>
+
+    <footer class="footer glass-card">
+        <div class="footer-content">
+            <div><i class='bx bx-copyright'></i> 2025 Nexus Platforms</div>
+            <div><a href="/documentation">Documentação</a></div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('navToggle')?.addEventListener('click', () => document.getElementById('navMenu').classList.toggle('active'));
+        fetch('/api/user/me').then(res => res.ok ? res.json() : null).then(user => {
+            const loginLink = document.getElementById('loginLink');
+            const logoutLink = document.getElementById('logoutLink');
+            const dashboardLink = document.getElementById('dashboardLink');
+            if (user) {
+                loginLink.style.display = 'none';
+                logoutLink.style.display = 'inline-flex';
+                dashboardLink.style.display = 'inline-flex';
+            } else {
+                loginLink.style.display = 'inline-flex';
+                logoutLink.style.display = 'none';
+                dashboardLink.style.display = 'none';
+            }
+        }).catch(() => {});
+    </script>
+</body>
+</html>

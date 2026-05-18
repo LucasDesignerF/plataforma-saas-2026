@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Dashboard do cliente Nexus Platforms - Gerencie seus produtos, pedidos e tickets de suporte.">
+    <title>Meu Dashboard | Nexus Platforms</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(30,30,60,0.08) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(30,30,60,0.08) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(50px,50px); }
+        }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.25;
+            z-index: -1;
+            animation: float 18s infinite ease-in-out;
+        }
+        .orb-purple { width: 500px; height: 500px; background: #7c3aed; top: -200px; left: -200px; }
+        .orb-blue { width: 600px; height: 600px; background: #2563eb; bottom: -250px; right: -250px; animation-delay: -6s; }
+        @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-60px) rotate(5deg); } }
+
+        /* Navbar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 1.5rem;
+            background: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .nav-brand i { color: #a78bfa; font-size: 1.8rem; }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #c084fc; }
+        .mobile-toggle { display: none; font-size: 1.8rem; cursor: pointer; }
+
+        /* Container */
+        .container {
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+        }
+        /* Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .dashboard-header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(0,0,0,0.4);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid #2d2d4e;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid #2d2d4e;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            border-color: #a78bfa;
+            background: rgba(20, 20, 40, 0.7);
+            transform: translateY(-2px);
+        }
+        .stat-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #2d2d4e;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            border-radius: 2rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* Cards items */
+        .items-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .item-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #2d2d4e;
+            border-radius: 1rem;
+            padding: 1.2rem;
+            transition: 0.2s;
+        }
+        .item-card:hover {
+            border-color: #a78bfa;
+        }
+        .delivery-content {
+            margin-top: 0.8rem;
+            padding: 0.6rem;
+            background: rgba(0,0,0,0.5);
+            border-radius: 0.75rem;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-approved { background: #15803d; color: #e2e8f0; }
+        .status-pending { background: #b45309; color: #fff; }
+        .status-rejected { background: #b91c1c; color: #fff; }
+        /* Ticket chat */
+        .ticket-messages {
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .message-bubble {
+            background: rgba(0,0,0,0.5);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            max-width: 80%;
+        }
+        .message-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+        }
+        .message-bubble.admin {
+            align-self: flex-start;
+            background: #1e293b;
+        }
+        .message-meta {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+        .ticket-reply-form {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .ticket-reply-form input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d2d4e;
+            border-radius: 2rem;
+            color: white;
+        }
+        /* Forms */
+        .ticket-form {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1.2rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .ticket-form input, .ticket-form textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d2d4e;
+            border-radius: 0.75rem;
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        .btn {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+        }
+        .footer {
+            background: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #2d2d4e;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+            .nav-links.active { display: flex; }
+            .mobile-toggle { display: block; }
+            .nav-container { flex-wrap: wrap; }
+            .dashboard-header { flex-direction: column; align-items: flex-start; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .tabs { justify-content: center; }
+            .message-bubble { max-width: 95%; }
+        }
+    </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-purple"></div>
+<div class="orb orb-blue"></div>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand"><i class='bx bx-rocket'></i> Nexus Platforms</div>
+        <div class="mobile-toggle" id="mobileToggle"><i class='bx bx-menu'></i></div>
+        <div class="nav-links" id="navLinks">
+            <a href="/"><i class='bx bx-home'></i> Home</a>
+            <a href="/products"><i class='bx bx-package'></i> Produtos</a>
+            <a href="/documentation"><i class='bx bx-book'></i> Documentação</a>
+            <a href="/dashboard"><i class='bx bx-user'></i> Dashboard</a>
+            <a href="/logout"><i class='bx bx-log-out'></i> Sair</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h1><i class='bx bx-dashboard'></i> Meu Dashboard</h1>
+        <div class="user-info" id="userInfo">
+            <img class="user-avatar" id="userAvatar" src="" alt="Avatar">
+            <span class="user-name" id="userName">Carregando...</span>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-title"><i class='bx bx-package'></i> Produtos</div><div class="stat-value" id="statProducts">-</div></div>
+        <div class="stat-card"><div class="stat-title"><i class='bx bx-receipt'></i> Pedidos</div><div class="stat-value" id="statOrders">-</div></div>
+        <div class="stat-card"><div class="stat-title"><i class='bx bx-hourglass'></i> Pendentes</div><div class="stat-value" id="statPending">-</div></div>
+        <div class="stat-card"><div class="stat-title"><i class='bx bx-ticket'></i> Tickets</div><div class="stat-value" id="statTickets">-</div></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="products"><i class='bx bx-package'></i> Produtos Comprados</button>
+        <button class="tab-btn" data-tab="orders"><i class='bx bx-receipt'></i> Meus Pedidos</button>
+        <button class="tab-btn" data-tab="tickets"><i class='bx bx-support'></i> Suporte</button>
+    </div>
+
+    <div id="tab-products" class="tab-content active">
+        <div id="purchasedList" class="items-grid">Carregando produtos...</div>
+    </div>
+    <div id="tab-orders" class="tab-content">
+        <div id="ordersList" class="items-grid">Carregando pedidos...</div>
+    </div>
+    <div id="tab-tickets" class="tab-content">
+        <div class="ticket-form">
+            <h3>Abrir novo ticket</h3>
+            <form id="newTicketForm">
+                <input type="text" name="subject" placeholder="Assunto" required>
+                <textarea name="message" placeholder="Descreva seu problema detalhadamente..." rows="4" required></textarea>
+                <button type="submit" class="btn"><i class='bx bx-send'></i> Enviar Ticket</button>
+            </form>
+        </div>
+        <h3>Meus tickets</h3>
+        <div id="userTickets" class="items-grid">Carregando tickets...</div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div>© 2025 Nexus Platforms | Tecnologia e Inovação</div>
+</footer>
+
+<script>
+    let userId = null;
+    let userData = null;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    }
+
+    async function loadUserInfo() {
+        try {
+            const resp = await fetch('/api/user/me');
+            if (!resp.ok) throw new Error();
+            userData = await resp.json();
+            userId = userData.id;
+            document.getElementById('userName').innerText = userData.global_name || userData.username;
+            if (userData.avatar_url) {
+                document.getElementById('userAvatar').src = userData.avatar_url;
+            } else {
+                document.getElementById('userAvatar').src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
+            return true;
+        } catch(e) {
+            window.location.href = '/login';
+            return false;
+        }
+    }
+
+    // Carregar produtos comprados (via endpoint próprio)
+    async function loadPurchasedProducts() {
+        const container = document.getElementById('purchasedList');
+        try {
+            const resp = await fetch('/api/user/products');
+            if (!resp.ok) throw new Error();
+            const products = await resp.json();
+            if (!products.length) {
+                container.innerHTML = '<div class="item-card">Nenhum produto comprado ainda.</div>';
+                document.getElementById('statProducts').innerText = '0';
+                return;
+            }
+            document.getElementById('statProducts').innerText = products.length;
+            container.innerHTML = products.map(p => `
+                <div class="item-card">
+                    <strong>${escapeHtml(p.name)}</strong> - R$ ${p.price.toFixed(2)}
+                    <div class="delivery-content">
+                        <i class='bx bx-gift'></i> Entrega: 
+                        ${p.delivery_type === 'file' 
+                            ? `<a href="${escapeHtml(p.delivery_content)}" target="_blank" style="color:#c084fc;">Download do arquivo</a>` 
+                            : escapeHtml(p.delivery_content)}
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) {
+            container.innerHTML = '<div class="item-card">Erro ao carregar produtos.</div>';
+        }
+    }
+
+    // Carregar pedidos do usuário
+    async function loadOrders() {
+        const container = document.getElementById('ordersList');
+        try {
+            const resp = await fetch('/api/user/orders');
+            if (!resp.ok) throw new Error();
+            const orders = await resp.json();
+            if (!orders.length) {
+                container.innerHTML = '<div class="item-card">Nenhum pedido encontrado.</div>';
+                document.getElementById('statOrders').innerText = '0';
+                document.getElementById('statPending').innerText = '0';
+                return;
+            }
+            const pendingCount = orders.filter(o => o.status === 'pending').length;
+            document.getElementById('statOrders').innerText = orders.length;
+            document.getElementById('statPending').innerText = pendingCount;
+            container.innerHTML = orders.map(o => {
+                let statusClass = '';
+                if (o.status === 'approved') statusClass = 'status-approved';
+                else if (o.status === 'pending') statusClass = 'status-pending';
+                else if (o.status === 'rejected') statusClass = 'status-rejected';
+                return `
+                    <div class="item-card">
+                        <strong>${escapeHtml(o.product_name)}</strong> - R$ ${o.amount.toFixed(2)}<br>
+                        <span class="status-badge ${statusClass}">${o.status}</span><br>
+                        <small>Data: ${new Date(o.created_at).toLocaleString()}</small>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) {
+            container.innerHTML = '<div class="item-card">Erro ao carregar pedidos.</div>';
+        }
+    }
+
+    // Carregar tickets (suporte a múltiplas mensagens - simulado com array de mensagens)
+    // Como o backend atual só tem message e admin_reply, exibiremos como conversa simples
+    // e permitiremos resposta do usuário (será enviada como novo ticket? Melhor: endpoint próprio)
+    // Por enquanto, implementaremos apenas exibição e resposta que atualiza o ticket (adiciona nova mensagem)
+    // Para isso, vamos precisar de um endpoint adicional. Vou criar um formulário de resposta que envia para /api/ticket/reply
+    // (você precisará implementar no backend)
+    async function loadTickets() {
+        const container = document.getElementById('userTickets');
+        try {
+            const resp = await fetch('/api/user/tickets');
+            if (!resp.ok) throw new Error();
+            const tickets = await resp.json();
+            if (!tickets.length) {
+                container.innerHTML = '<div class="item-card">Nenhum ticket encontrado.</div>';
+                document.getElementById('statTickets').innerText = '0';
+                return;
+            }
+            document.getElementById('statTickets').innerText = tickets.length;
+            container.innerHTML = tickets.map(t => {
+                // Montar mensagens: pergunta original + resposta do admin (se houver)
+                const messages = [];
+                messages.push({ role: 'user', text: t.message, date: t.created_at });
+                if (t.admin_reply) {
+                    messages.push({ role: 'admin', text: t.admin_reply, date: t.updated_at || t.created_at });
+                }
+                // Se o ticket estiver aberto, mostrar formulário de resposta
+                const isOpen = t.status === 'open';
+                return `
+                    <div class="item-card" data-ticket-id="${t.id}">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>${escapeHtml(t.subject)}</strong>
+                            <span class="status-badge" style="background: ${t.status === 'open' ? '#b45309' : '#15803d'}">${t.status}</span>
+                        </div>
+                        <div class="ticket-messages" id="messages-${t.id}">
+                            ${messages.map(m => `
+                                <div class="message-bubble ${m.role}">
+                                    <div class="message-meta">${m.role === 'user' ? 'Você' : 'Suporte'} - ${new Date(m.date).toLocaleString()}</div>
+                                    <div>${escapeHtml(m.text)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${isOpen ? `
+                            <div class="ticket-reply-form" data-ticket-id="${t.id}">
+                                <input type="text" placeholder="Digite sua resposta..." class="reply-input">
+                                <button class="btn btn-small send-reply">Enviar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            // Adicionar eventos aos botões de resposta
+            document.querySelectorAll('.send-reply').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const card = btn.closest('.item-card');
+                    const ticketId = card.dataset.ticketId;
+                    const input = card.querySelector('.reply-input');
+                    const message = input.value.trim();
+                    if (!message) return;
+                    // Enviar resposta (endpoint a ser criado)
+                    const formData = new FormData();
+                    formData.append('ticket_id', ticketId);
+                    formData.append('message', message);
+                    const resp = await fetch('/api/ticket/reply', { method: 'POST', body: formData });
+                    if (resp.ok) {
+                        input.value = '';
+                        loadTickets(); // recarregar para mostrar a nova mensagem
+                    } else {
+                        alert('Erro ao enviar resposta. Tente novamente.');
+                    }
+                });
+            });
+        } catch(e) {
+            container.innerHTML = '<div class="item-card">Erro ao carregar tickets.</div>';
+        }
+    }
+
+    // Enviar novo ticket
+    document.getElementById('newTicketForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const resp = await fetch('/api/ticket', { method: 'POST', body: formData });
+            if (resp.ok) {
+                alert('Ticket enviado com sucesso!');
+                e.target.reset();
+                await loadTickets();
+                // Mudar para aba de tickets se desejar
+                document.querySelector('.tab-btn[data-tab="tickets"]').click();
+            } else {
+                alert('Erro ao enviar ticket.');
+            }
+        } catch(e) {
+            alert('Erro de conexão.');
+        }
+    });
+
+    // Navegação por abas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            if (btn.dataset.tab === 'tickets') loadTickets();
+        });
+    });
+
+    // Mobile menu
+    const toggleBtn = document.getElementById('mobileToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (toggleBtn && navLinks) {
+        toggleBtn.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+
+    // Inicialização
+    (async () => {
+        const ok = await loadUserInfo();
+        if (ok) {
+            await loadPurchasedProducts();
+            await loadOrders();
+            await loadTickets();
+        }
+    })();
+</script>
+</body>
+</html>
