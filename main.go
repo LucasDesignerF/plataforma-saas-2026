@@ -44,6 +44,26 @@ var discordEndpoint = oauth2.Endpoint{
 	TokenURL: "https://discord.com/api/oauth2/token",
 }
 
+// Cliente HTTP com User-Agent personalizado para evitar bloqueios
+var httpClient = &http.Client{
+	Timeout: 10 * time.Second,
+}
+
+func init() {
+	// Configurar User-Agent global para o cliente HTTP usado pelo OAuth2
+	http.DefaultClient.Timeout = 10 * time.Second
+	http.DefaultClient.Transport = &customTransport{roundTripper: http.DefaultTransport}
+}
+
+type customTransport struct {
+	roundTripper http.RoundTripper
+}
+
+func (t *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", "NexusPlatforms/1.0 (Render; +https://nexusplatforms.com)")
+	return t.roundTripper.RoundTrip(req)
+}
+
 type User struct {
 	ID                string    `json:"id"`
 	DiscordID         string    `json:"discord_id"`
@@ -101,9 +121,12 @@ func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Println(".env não encontrado, usando variáveis de ambiente")
 	}
-	port := os.Getenv("APP_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = os.Getenv("APP_PORT")
+		if port == "" {
+			port = "8080"
+		}
 	}
 	secret := os.Getenv("SESSION_SECRET")
 	if secret == "" {
@@ -124,6 +147,8 @@ func init() {
 		Scopes:       []string{"identify", "email"},
 		Endpoint:     discordEndpoint,
 	}
+	// ❌ REMOVA ESTA LINHA:
+	// oauthConfig.Client = func(ctx context.Context) *http.Client { return httpClient }
 
 	pixName = os.Getenv("PIX_NAME")
 	pixCity = os.Getenv("PIX_CITY")
@@ -285,6 +310,9 @@ func main() {
 	r.HandleFunc("/auth/callback", authCallbackHandler)
 	r.HandleFunc("/logout", logoutHandler)
 
+	// Endpoint de ping para manter o serviço ativo (keep-alive)
+	r.HandleFunc("/ping", pingHandler)
+
 	// API pública
 	r.HandleFunc("/api/products", apiProductsHandler)
 	r.HandleFunc("/api/user/me", apiUserMeHandler)
@@ -316,12 +344,21 @@ func main() {
 	r.HandleFunc("/admin/product/upload", requireAdmin(uploadProductFileHandler))
 	r.HandleFunc("/api/admin/stats", requireAdmin(adminStatsHandler))
 
-	port := os.Getenv("APP_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = os.Getenv("APP_PORT")
+		if port == "" {
+			port = "8080"
+		}
 	}
-	log.Printf("Servidor em http://localhost:%s", port)
+	log.Printf("Servidor rodando em http://localhost:%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
+}
+
+// Handler de ping (keep-alive)
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("pong"))
 }
 
 // ==================== HANDLERS PÚBLICOS ====================
@@ -399,6 +436,7 @@ func authCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := oauthConfig.Exchange(r.Context(), code)
 	if err != nil {
+		log.Printf("Erro ao trocar token: %v", err)
 		http.Error(w, "Erro ao trocar token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1030,7 +1068,6 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(usersFile, newUsers)
-	// Opcional: remover pedidos e tickets associados? Não farei agora para manter simplicidade.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
